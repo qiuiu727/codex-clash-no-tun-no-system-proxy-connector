@@ -4,6 +4,12 @@ One-click install, start, or focus the Microsoft Store Codex desktop app through
 
 This is a Windows PowerShell 5.1 project. It is a launcher, not a Clash configuration manager.
 
+## Third-party notice
+
+This project contains no Clash Verge Rev code, installer content, or proxy-core binary. If a future optional installer supports a local proxy core, it must obtain the official Mihomo release directly, verify the published checksum, and include Mihomo's copyright and MIT license notice with any redistributed binary. Do not extract or redistribute the `verge-mihomo` sidecar from Clash Verge Rev.
+
+"Clash" and "Mihomo" are third-party project names. This project is independent and is not affiliated with or endorsed by their maintainers.
+
 ## What it does
 
 - If Codex is already running, restores its main window instead of restarting it.
