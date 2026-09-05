@@ -1,4 +1,4 @@
-# Codex Scoped Proxy Launcher for Windows
+# 基于 Clash 的 Codex 无 TUN、无系统代理连接器
 
 One-click install, start, or focus the Microsoft Store Codex desktop app through an already-running local HTTP proxy, without changing the Windows system proxy or TUN mode.
 
@@ -24,7 +24,7 @@ This is a Windows PowerShell 5.1 project. It is a launcher, not a Clash configur
 
 - Windows 11 or another Windows version with Windows PowerShell 5.1.
 - Microsoft Store Codex installed and signed in with a ChatGPT account.
-- A local HTTP proxy already running. Its provider and configuration are your responsibility.
+- A local Clash/Mihomo-compatible HTTP proxy already running. Its provider and configuration are your responsibility.
 - The proxy must support HTTPS CONNECT and WebSocket upgrades. Codex uses both HTTPS and WebSocket traffic.
 
 ## One-click installation
