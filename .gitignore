@@ -1,0 +1,27 @@
+# Local configuration may contain a private proxy endpoint.
+config.json
+config.local.json
+
+# Private proxy profiles and subscription material.
+profiles/
+subscriptions/
+*.subscription
+*.nodes
+*.yaml
+*.yml
+.env
+.env.*
+
+# Runtime output.
+logs/
+*.log
+*.bak
+*.tmp
+*.zip
+*.msi
+
+# Editor and operating-system files.
+.vscode/
+.idea/
+Thumbs.db
+Desktop.ini
