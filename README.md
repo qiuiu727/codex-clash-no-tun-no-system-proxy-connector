@@ -26,6 +26,7 @@ This project contains no Clash Verge Rev code, installer content, or proxy-core 
 ## What it deliberately does not do
 
 - Does not include, read, modify, upload, or publish a Clash subscription.
+- Never uploads or publishes a subscription URL. Any future local setup value is stored only in the user's local installation directory, is excluded by Git, and must never be added to an issue, commit, log, screenshot, or release asset.
 - Does not include a real proxy address or port.
 - Does not modify Clash TUN mode, Windows system proxy, routes, DNS, firewall rules, or existing network settings.
 - Does not store account credentials, tokens, cookies, Codex conversations, or user paths in the repository.
