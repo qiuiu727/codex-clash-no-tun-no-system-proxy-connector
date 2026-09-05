@@ -1,4 +1,4 @@
-# 基于 Clash 的 Codex 无 TUN、无系统代理连接器
+# Codex Clash No-TUN No-System-Proxy Connector（基于 Clash 的 Codex 无 TUN、无系统代理连接器）
 
 One-click install, start, or focus the Microsoft Store Codex desktop app through an already-running local HTTP proxy, without changing the Windows system proxy or TUN mode.
 
