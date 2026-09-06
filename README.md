@@ -11,7 +11,7 @@ The launcher is intentionally scoped: only a **new Codex process started through
 ## Install
 
 1. Start your own local proxy core (for example, Clash/Mihomo) first. It must expose a working loopback HTTP proxy with HTTPS CONNECT support.
-2. Double-click [Setup-CodexConnection.cmd](Setup-CodexConnection.cmd), or run it from PowerShell:
+2. In the release ZIP, keep `Start-CodexConnection-Setup.cmd` beside the `CodexConnection` folder and double-click it. From a source checkout, double-click [Setup-CodexConnection.cmd](Setup-CodexConnection.cmd), or run it from PowerShell:
 
    ```powershell
    powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Setup-CodexConnection.ps1
@@ -19,7 +19,7 @@ The launcher is intentionally scoped: only a **new Codex process started through
 
 3. The setup program defaults to English. Type `ZH` at its first prompt for Simplified Chinese, then type `1` to install or `2` to uninstall.
 4. During installation, type `1` to create the optional **Restart Codex Connection** script, or `2` for No. The normal **Start Codex Connection** script is always installed.
-5. Setup auto-detects a live local HTTP proxy before installing. It creates a `Codex Connection` Start Menu shortcut. Right-click that shortcut and choose **Pin to taskbar**.
+5. Setup auto-detects a live local HTTP proxy before installing. It reports a clear success or failure result before closing, creates a movable `Start Codex.exe` launcher with an original code-and-connection icon on the Desktop, and creates `Restart Codex.exe` there when you chose the optional restart script. It also creates a matching Start Menu shortcut; right-click it and choose **Pin to taskbar**.
 
 The local installation is `%LOCALAPPDATA%\CodexConnection`.
 
@@ -27,14 +27,14 @@ The local installation is `%LOCALAPPDATA%\CodexConnection`.
 
 | How Codex is started | Result |
 | --- | --- |
-| `Codex Connection` launcher, Codex closed | Starts Codex with the detected local proxy for that child process only. |
-| `Codex Connection` launcher, Codex already open | Focuses the existing window; it does not restart or retroactively change that process. |
+| Generated launcher, Codex closed | Starts Codex with the detected local proxy for that child process only. |
+| Generated launcher, Codex already open | Restores and brings the Codex main window to the foreground; it does not restart or retroactively change that process. |
 | Original Codex icon | Starts Codex normally, with no proxy parameter injected by this project. |
 | Optional `Restart Codex Connection` script | Stops the Codex app and then launches it through the scoped launcher. Run it only when you explicitly want a restart. |
 
 ## Uninstall
 
-Run [Setup-CodexConnection.cmd](Setup-CodexConnection.cmd) again and select `U`, or run the installed uninstaller:
+Run [Setup-CodexConnection.cmd](Setup-CodexConnection.cmd) again and select `2`, or run the installed uninstaller:
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$env:LOCALAPPDATA\CodexConnection\Uninstall-CodexScopedProxy.ps1"
@@ -71,3 +71,5 @@ This project contains no Clash Verge Rev code, installer content, subscription, 
 ## License
 
 MIT. See [LICENSE](LICENSE).
+
+This independent project is not affiliated with or endorsed by OpenAI. Its launcher icon is original artwork and is not a ChatGPT or OpenAI logo.

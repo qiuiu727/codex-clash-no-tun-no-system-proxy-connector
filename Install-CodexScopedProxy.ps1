@@ -1,6 +1,7 @@
 [CmdletBinding()]
 param(
-    [switch]$GenerateRestartScript
+    [switch]$GenerateRestartScript,
+    [ValidateSet('en', 'zh')][string]$Language = 'en'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -29,7 +30,9 @@ trap {
 Write-InstallerLog -Level 'INFO' -Message 'INSTALL_STARTED'
 $filesToInstall = @(
     'Start-CodexScopedProxy.ps1',
+    'CodexConnectionLauncher.exe',
     'New-TaskbarShortcut.ps1',
+    'New-DesktopLaunchers.ps1',
     'Uninstall-CodexScopedProxy.ps1',
     'Start-CodexConnection.cmd'
 )
@@ -71,9 +74,14 @@ try {
     }
     Copy-Item -LiteralPath $tempConfigPath -Destination (Join-Path $installRoot 'config.json') -Force
 
-    & (Join-Path $installRoot 'New-TaskbarShortcut.ps1')
+    & (Join-Path $installRoot 'New-TaskbarShortcut.ps1') -Language $Language
     if (-not $?) {
         throw 'The launcher was installed, but the Start Menu shortcut could not be created.'
+    }
+
+    & (Join-Path $installRoot 'New-DesktopLaunchers.ps1') -GenerateRestartScript:$GenerateRestartScript -Language $Language
+    if (-not $?) {
+        throw 'The launcher was installed, but the Desktop launcher could not be created.'
     }
 }
 finally {
@@ -85,7 +93,8 @@ finally {
 Write-Output "Installed to $installRoot"
 Write-InstallerLog -Level 'INFO' -Message 'INSTALL_COMPLETED'
 Write-Output 'The local proxy endpoint was auto-detected and saved only in the local installation directory.'
-Write-Output 'Use the Start Menu shortcut named Codex Connection, then choose Pin to taskbar.'
+Write-Output 'A portable Codex launcher EXE with the original code-and-connection icon was created on the Desktop. You can move it anywhere; it always uses the local installation directory.'
+Write-Output 'A matching Start Menu shortcut was created. Right-click it and choose Pin to taskbar.'
 if ($GenerateRestartScript) {
-    Write-Output 'The optional Restart Codex Connection script was created in the local installation directory.'
+    Write-Output 'A portable restart launcher EXE was also created on the Desktop.'
 }

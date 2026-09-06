@@ -30,8 +30,10 @@ function Write-SetupLog {
 }
 
 trap {
-    Write-SetupLog -Level 'ERROR' -Message $_.Exception.Message
-    Write-Host "Operation failed. Local log: $diagnosticPath"
+    $safeMessage = ConvertTo-SafeLogMessage -Message $_.Exception.Message
+    Write-SetupLog -Level 'ERROR' -Message $safeMessage
+    Write-Host "FAILED: $safeMessage" -ForegroundColor Red
+    Write-Host "Local log: $diagnosticPath"
     exit 1
 }
 
@@ -40,7 +42,9 @@ if ($ValidateOnly) {
         'Install-CodexScopedProxy.ps1',
         'Uninstall-CodexScopedProxy.ps1',
         'Start-CodexScopedProxy.ps1',
-        'Start-CodexConnection.cmd'
+        'Start-CodexConnection.cmd',
+        'New-DesktopLaunchers.ps1',
+        'CodexConnectionLauncher.exe'
     )
     foreach ($file in $requiredFiles) {
         if (-not (Test-Path -LiteralPath (Join-Path $PSScriptRoot $file) -PathType Leaf)) {
@@ -58,6 +62,8 @@ $en = [pscustomobject]@{
     Invalid = 'Invalid choice. Please try again.'
     Install = 'Installing Codex Connection...'
     Uninstall = 'Removing Codex Connection...'
+    InstallSuccess = 'SUCCESS: Codex Connection was installed. The portable launcher is on your Desktop and can be moved anywhere.'
+    UninstallSuccess = 'SUCCESS: Codex Connection was removed.'
 }
 $zh = ConvertFrom-Json @'
 {
@@ -66,12 +72,15 @@ $zh = ConvertFrom-Json @'
   "Restart": "\u662f\u5426\u751f\u6210\u53ef\u9009\u7684\u201c\u91cd\u542f Codex Connection\u201d\u811a\u672c\uff1f\u8f93\u5165 1 \u751f\u6210\uff0c\u8f93\u5165 2 \u4e0d\u751f\u6210",
   "Invalid": "\u8f93\u5165\u65e0\u6548\uff0c\u8bf7\u91cd\u8bd5\u3002",
   "Install": "\u6b63\u5728\u5b89\u88c5 Codex Connection...",
-  "Uninstall": "\u6b63\u5728\u5378\u8f7d Codex Connection..."
+  "Uninstall": "\u6b63\u5728\u5378\u8f7d Codex Connection...",
+  "InstallSuccess": "\u6210\u529f\uff1aCodex Connection \u5df2\u5b89\u88c5\u3002\u53ef\u79fb\u52a8\u7684\u542f\u52a8\u6587\u4ef6\u5df2\u521b\u5efa\u5728\u684c\u9762\u3002",
+  "UninstallSuccess": "\u6210\u529f\uff1aCodex Connection \u5df2\u5378\u8f7d\u3002"
 }
 '@
 
 $languageChoice = (Read-Host $en.Language).Trim().ToUpperInvariant()
 $text = if ($languageChoice -eq 'ZH') { $zh } else { $en }
+$languageCode = if ($languageChoice -eq 'ZH') { 'zh' } else { 'en' }
 Write-SetupLog -Level 'INFO' -Message 'SETUP_STARTED'
 
 while ($true) {
@@ -93,9 +102,10 @@ if ($action -eq '2') {
     }
     if ($?) {
         Write-SetupLog -Level 'INFO' -Message 'UNINSTALL_COMPLETED'
+        Write-Host $text.UninstallSuccess -ForegroundColor Green
         exit 0
     }
-    exit 1
+    throw 'Uninstall command failed. See the local log for details.'
 }
 
 $restartChoice = (Read-Host $text.Restart).Trim().ToUpperInvariant()
@@ -107,9 +117,10 @@ $generateRestart = $restartChoice -eq '1'
 $installRequest = if ($generateRestart) { 'INSTALL_REQUESTED restart_script=yes' } else { 'INSTALL_REQUESTED restart_script=no' }
 Write-SetupLog -Level 'INFO' -Message $installRequest
 Write-Host $text.Install
-& (Join-Path $PSScriptRoot 'Install-CodexScopedProxy.ps1') -GenerateRestartScript:$generateRestart
+& (Join-Path $PSScriptRoot 'Install-CodexScopedProxy.ps1') -GenerateRestartScript:$generateRestart -Language $languageCode
 if ($?) {
     Write-SetupLog -Level 'INFO' -Message 'INSTALL_COMPLETED'
+    Write-Host $text.InstallSuccess -ForegroundColor Green
     exit 0
 }
-exit 1
+throw 'Installer command failed. See the local log for details.'

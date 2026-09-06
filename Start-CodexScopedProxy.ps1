@@ -1,11 +1,14 @@
 [CmdletBinding()]
 param(
-    [string]$ConfigPath = (Join-Path $PSScriptRoot 'config.json'),
+    [string]$ConfigPath,
     [string]$LogDirectory,
     [switch]$DetectOnly
 )
 
 $ErrorActionPreference = 'Stop'
+if ([string]::IsNullOrWhiteSpace($ConfigPath)) {
+    $ConfigPath = Join-Path $PSScriptRoot 'config.json'
+}
 $logDirectory = if ([string]::IsNullOrWhiteSpace($LogDirectory)) {
     Join-Path (Split-Path -Parent $ConfigPath) 'logs'
 }
@@ -150,31 +153,30 @@ function Resolve-ProxyUri {
 }
 
 function Show-ExistingCodexWindow {
-    $running = @(Get-Process -Name 'ChatGPT' -ErrorAction SilentlyContinue)
-    if ($running.Count -eq 0) {
-        return $false
-    }
-
     Add-Type @'
 using System;
 using System.Runtime.InteropServices;
 public static class CodexWindowApi {
     [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr handle, int command);
+    [DllImport("user32.dll")] public static extern bool BringWindowToTop(IntPtr handle);
     [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr handle);
 }
 '@ -ErrorAction SilentlyContinue
 
-    foreach ($process in $running) {
-        if ($process.MainWindowHandle -ne 0) {
-            [CodexWindowApi]::ShowWindow($process.MainWindowHandle, 9) | Out-Null
-            [CodexWindowApi]::SetForegroundWindow($process.MainWindowHandle) | Out-Null
-            Write-LauncherLog "FOCUSED pid=$($process.Id)"
-            return $true
+    for ($attempt = 0; $attempt -lt 8; $attempt++) {
+        foreach ($process in @(Get-Process -Name 'ChatGPT' -ErrorAction SilentlyContinue)) {
+            if ($process.MainWindowHandle -ne 0) {
+                [CodexWindowApi]::ShowWindow($process.MainWindowHandle, 9) | Out-Null
+                [CodexWindowApi]::BringWindowToTop($process.MainWindowHandle) | Out-Null
+                [CodexWindowApi]::SetForegroundWindow($process.MainWindowHandle) | Out-Null
+                Write-LauncherLog "FOCUSED_MAIN_WINDOW pid=$($process.Id)"
+                return $true
+            }
         }
+        Start-Sleep -Milliseconds 250
     }
 
-    Write-LauncherLog 'ALREADY_STARTING ChatGPT process exists without a main window'
-    return $true
+    return $false
 }
 
 try {

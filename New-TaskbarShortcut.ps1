@@ -1,29 +1,25 @@
 [CmdletBinding()]
-param()
+param(
+    [ValidateSet('en', 'zh')][string]$Language = 'en'
+)
 
 $ErrorActionPreference = 'Stop'
-$launcherPath = Join-Path $PSScriptRoot 'Start-CodexConnection.cmd'
+$launcherPath = Join-Path $PSScriptRoot 'CodexConnectionLauncher.exe'
 if (-not (Test-Path -LiteralPath $launcherPath -PathType Leaf)) {
     throw "Launcher was not found: $launcherPath"
 }
 
-$package = Get-AppxPackage -Name 'OpenAI.Codex' -ErrorAction Stop |
-    Sort-Object Version -Descending |
-    Select-Object -First 1
-if (-not $package) {
-    throw 'Microsoft Store Codex was not found.'
-}
-
-$appPath = Join-Path $package.InstallLocation 'app\ChatGPT.exe'
 $startMenuDirectory = Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs'
-$shortcutPath = Join-Path $startMenuDirectory 'Codex Connection.lnk'
+$zhShortcutName = 'Codex' + [char]0x542F + [char]0x52A8 + '.lnk'
+$shortcutName = if ($Language -eq 'zh') { $zhShortcutName } else { 'Start Codex.lnk' }
+$shortcutPath = Join-Path $startMenuDirectory $shortcutName
 
 $shell = New-Object -ComObject WScript.Shell
 $shortcut = $shell.CreateShortcut($shortcutPath)
 $shortcut.TargetPath = $launcherPath
-$shortcut.Arguments = ''
+$shortcut.Arguments = '--start'
 $shortcut.WorkingDirectory = $PSScriptRoot
-$shortcut.IconLocation = $appPath + ',0'
+$shortcut.IconLocation = $launcherPath + ',0'
 $shortcut.Description = 'Start or focus Codex through a local proxy without changing system proxy settings'
 $shortcut.Save()
 

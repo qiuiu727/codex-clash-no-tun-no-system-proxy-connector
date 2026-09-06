@@ -11,7 +11,7 @@
 ## 安装
 
 1. 先启动自己的本地代理核心（例如 Clash/Mihomo）。它需要提供支持 HTTPS CONNECT 的可用回环 HTTP 代理。
-2. 双击 [Setup-CodexConnection.cmd](Setup-CodexConnection.cmd)，或在 PowerShell 中运行：
+2. 对于发行 ZIP，请保持 `Start-CodexConnection-Setup.cmd` 与 `CodexConnection` 文件夹同级，再双击该启动文件。对于源码目录，可双击 [Setup-CodexConnection.cmd](Setup-CodexConnection.cmd)，或在 PowerShell 中运行：
 
    ```powershell
    powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Setup-CodexConnection.ps1
@@ -19,7 +19,7 @@
 
 3. 安装程序默认英文；第一个提示输入 `ZH` 可切换简体中文，然后输入 `1` 安装或输入 `2` 卸载。
 4. 安装时输入 `1` 生成可选的“重启 Codex Connection”脚本，输入 `2` 代表不生成；普通“启动 Codex Connection”脚本一定会生成。
-5. 安装器会先自动检测正在运行的本地 HTTP 代理，成功后创建名为 `Codex Connection` 的开始菜单快捷方式。在该快捷方式上右键，选择“固定到任务栏”。
+5. 安装器会先自动检测正在运行的本地 HTTP 代理，并在结束前明确提示成功、失败或错误原因。英文安装会在桌面创建带原创“代码与连接”图标、可任意移动的 `Start Codex.exe`；若选择生成重启脚本，还会创建 `Restart Codex.exe`。中文安装则生成 `Codex启动.exe` 与可选的 `Codex重启.exe`。同时会创建匹配的开始菜单快捷方式，可右键选择“固定到任务栏”。
 
 本地安装目录为 `%LOCALAPPDATA%\CodexConnection`。
 
@@ -27,14 +27,14 @@
 
 | 启动方式 | 结果 |
 | --- | --- |
-| 使用 `Codex Connection`，且 Codex 未运行 | 仅为新建的 Codex 进程注入检测到的本地代理。 |
-| 使用 `Codex Connection`，且 Codex 已打开 | 仅聚焦现有窗口；不重启，也不会追溯更改该进程。 |
+| 使用生成的启动器，且 Codex 未运行 | 仅为新建的 Codex 进程注入检测到的本地代理。 |
+| 使用生成的启动器，且 Codex 已打开 | 恢复并置顶 Codex 主窗口；不重启，也不会追溯更改该进程。 |
 | 使用原始 Codex 图标 | 正常启动；本项目不会注入代理参数。 |
 | 可选的“重启 Codex Connection”脚本 | 关闭 Codex 后再通过专用启动器启动。仅在你明确要重启时运行它。 |
 
 ## 卸载
 
-再次运行 [Setup-CodexConnection.cmd](Setup-CodexConnection.cmd) 并选择 `U`，或运行已安装的卸载脚本：
+再次运行 [Setup-CodexConnection.cmd](Setup-CodexConnection.cmd) 并选择 `2`，或运行已安装的卸载脚本：
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$env:LOCALAPPDATA\CodexConnection\Uninstall-CodexScopedProxy.ps1"
@@ -71,3 +71,5 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$env:LOCALAPPDATA\Codex
 ## 许可证
 
 MIT。参见 [LICENSE](LICENSE)。
+
+本项目独立开发，未获得 OpenAI 关联或背书；启动器图标为原创设计，不是 ChatGPT 或 OpenAI 标志。
