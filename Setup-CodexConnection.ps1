@@ -54,7 +54,7 @@ if ($ValidateOnly) {
 $en = [pscustomobject]@{
     Language = 'Press Enter for English, or type ZH for Simplified Chinese'
     Action = 'Type 1 to install or 2 to uninstall'
-    Restart = 'Create an optional Restart Codex Connection script? Type 1 for Yes or 2 for No (N)'
+    Restart = 'Create an optional Restart Codex Connection script? Type 1 for Yes or 2 for No'
     Invalid = 'Invalid choice. Please try again.'
     Install = 'Installing Codex Connection...'
     Uninstall = 'Removing Codex Connection...'
@@ -63,7 +63,7 @@ $zh = ConvertFrom-Json @'
 {
   "Language": "\u6309 Enter \u4f7f\u7528\u82f1\u8bed\uff0c\u6216\u8f93\u5165 ZH \u4f7f\u7528\u7b80\u4f53\u4e2d\u6587",
   "Action": "\u8f93\u5165 1 \u5b89\u88c5\uff0c\u8f93\u5165 2 \u5378\u8f7d",
-  "Restart": "\u662f\u5426\u751f\u6210\u53ef\u9009\u7684\u201c\u91cd\u542f Codex Connection\u201d\u811a\u672c\uff1f\u8f93\u5165 1 \u751f\u6210\uff0c\u8f93\u5165 2 \u4e0d\u751f\u6210\uff08N\uff09",
+  "Restart": "\u662f\u5426\u751f\u6210\u53ef\u9009\u7684\u201c\u91cd\u542f Codex Connection\u201d\u811a\u672c\uff1f\u8f93\u5165 1 \u751f\u6210\uff0c\u8f93\u5165 2 \u4e0d\u751f\u6210",
   "Invalid": "\u8f93\u5165\u65e0\u6548\uff0c\u8bf7\u91cd\u8bd5\u3002",
   "Install": "\u6b63\u5728\u5b89\u88c5 Codex Connection...",
   "Uninstall": "\u6b63\u5728\u5378\u8f7d Codex Connection..."

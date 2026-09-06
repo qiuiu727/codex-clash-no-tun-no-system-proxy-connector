@@ -18,7 +18,7 @@
    ```
 
 3. 安装程序默认英文；第一个提示输入 `ZH` 可切换简体中文，然后输入 `1` 安装或输入 `2` 卸载。
-4. 安装时输入 `1` 生成可选的“重启 Codex Connection”脚本，输入 `2` 代表不生成（N）；普通“启动 Codex Connection”脚本一定会生成。
+4. 安装时输入 `1` 生成可选的“重启 Codex Connection”脚本，输入 `2` 代表不生成；普通“启动 Codex Connection”脚本一定会生成。
 5. 安装器会先自动检测正在运行的本地 HTTP 代理，成功后创建名为 `Codex Connection` 的开始菜单快捷方式。在该快捷方式上右键，选择“固定到任务栏”。
 
 本地安装目录为 `%LOCALAPPDATA%\CodexConnection`。
