@@ -6,6 +6,27 @@ param(
 $ErrorActionPreference = 'Stop'
 $installRoot = Join-Path $env:LOCALAPPDATA 'CodexConnection'
 $sourceRoot = $PSScriptRoot
+$logDirectory = Join-Path $installRoot 'logs'
+$logPath = Join-Path $logDirectory 'installer.log'
+
+function Write-InstallerLog {
+    param(
+        [Parameter(Mandatory = $true)][string]$Level,
+        [Parameter(Mandatory = $true)][string]$Message
+    )
+
+    if (-not (Test-Path -LiteralPath $logDirectory -PathType Container)) {
+        New-Item -ItemType Directory -Path $logDirectory -Force | Out-Null
+    }
+    Add-Content -LiteralPath $logPath -Encoding UTF8 -Value ('{0} [INSTALLER] [{1}] {2}' -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'), $Level, $Message)
+}
+
+trap {
+    Write-InstallerLog -Level 'ERROR' -Message $_.Exception.Message
+    throw
+}
+
+Write-InstallerLog -Level 'INFO' -Message 'INSTALL_STARTED'
 $filesToInstall = @(
     'Start-CodexScopedProxy.ps1',
     'New-TaskbarShortcut.ps1',
@@ -34,6 +55,7 @@ try {
     if (-not $?) {
         throw 'Installation stopped because no working local HTTP proxy was detected. Start your local proxy core first. No system proxy, TUN, or subscription was changed.'
     }
+    Write-InstallerLog -Level 'INFO' -Message 'LOCAL_PROXY_DETECTED'
 
     New-Item -ItemType Directory -Path $installRoot -Force | Out-Null
     foreach ($file in $filesToInstall) {
@@ -61,6 +83,7 @@ finally {
 }
 
 Write-Output "Installed to $installRoot"
+Write-InstallerLog -Level 'INFO' -Message 'INSTALL_COMPLETED'
 Write-Output 'The local proxy endpoint was auto-detected and saved only in the local installation directory.'
 Write-Output 'Use the Start Menu shortcut named Codex Connection, then choose Pin to taskbar.'
 if ($GenerateRestartScript) {

@@ -23,6 +23,15 @@ function Write-LauncherLog {
     Add-Content -LiteralPath $logPath -Encoding UTF8 -Value ('{0} {1}' -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'), $Message)
 }
 
+function ConvertTo-SafeLogMessage {
+    param([Parameter(Mandatory = $true)][string]$Message)
+
+    $safe = $Message
+    $safe = $safe -replace '(?i)(vless|vmess|trojan|ss)://\S+', '<redacted-node-uri>'
+    $safe = $safe -replace '(?i)(token|secret|password)=\S+', '$1=<redacted>'
+    return $safe
+}
+
 function Test-LocalHttpProxy {
     param([Parameter(Mandatory = $true)][Uri]$ProxyUri)
 
@@ -214,6 +223,6 @@ try {
     exit 0
 }
 catch {
-    Write-LauncherLog "FAILED error=$($_.Exception.Message)"
+    Write-LauncherLog "FAILED error=$(ConvertTo-SafeLogMessage -Message $_.Exception.Message)"
     exit 1
 }

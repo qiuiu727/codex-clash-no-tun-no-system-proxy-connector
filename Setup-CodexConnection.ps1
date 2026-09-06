@@ -4,6 +4,36 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+$diagnosticDirectory = Join-Path $env:LOCALAPPDATA 'CodexConnection\logs'
+$diagnosticPath = Join-Path $diagnosticDirectory 'setup.log'
+
+function ConvertTo-SafeLogMessage {
+    param([Parameter(Mandatory = $true)][string]$Message)
+
+    $safe = $Message
+    $safe = $safe -replace '(?i)(vless|vmess|trojan|ss)://\S+', '<redacted-node-uri>'
+    $safe = $safe -replace '(?i)(token|secret|password)=\S+', '$1=<redacted>'
+    return $safe
+}
+
+function Write-SetupLog {
+    param(
+        [Parameter(Mandatory = $true)][string]$Level,
+        [Parameter(Mandatory = $true)][string]$Message
+    )
+
+    if (-not (Test-Path -LiteralPath $diagnosticDirectory -PathType Container)) {
+        New-Item -ItemType Directory -Path $diagnosticDirectory -Force | Out-Null
+    }
+    $line = '{0} [SETUP] [{1}] {2}' -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'), $Level, (ConvertTo-SafeLogMessage -Message $Message)
+    Add-Content -LiteralPath $diagnosticPath -Encoding UTF8 -Value $line
+}
+
+trap {
+    Write-SetupLog -Level 'ERROR' -Message $_.Exception.Message
+    Write-Host "Operation failed. Local log: $diagnosticPath"
+    exit 1
+}
 
 if ($ValidateOnly) {
     $requiredFiles = @(
@@ -42,6 +72,7 @@ $zh = ConvertFrom-Json @'
 
 $languageChoice = (Read-Host $en.Language).Trim().ToUpperInvariant()
 $text = if ($languageChoice -eq 'ZH') { $zh } else { $en }
+Write-SetupLog -Level 'INFO' -Message 'SETUP_STARTED'
 
 while ($true) {
     $action = (Read-Host $text.Action).Trim().ToUpperInvariant()
@@ -50,6 +81,7 @@ while ($true) {
 }
 
 if ($action -eq 'U') {
+    Write-SetupLog -Level 'INFO' -Message 'UNINSTALL_REQUESTED'
     Write-Host $text.Uninstall
     $uninstaller = Join-Path $PSScriptRoot 'Uninstall-CodexScopedProxy.ps1'
     if (Test-Path -LiteralPath $uninstaller -PathType Leaf) {
@@ -59,13 +91,21 @@ if ($action -eq 'U') {
         $installedUninstaller = Join-Path $env:LOCALAPPDATA 'CodexConnection\Uninstall-CodexScopedProxy.ps1'
         & $installedUninstaller
     }
-    if ($?) { exit 0 }
+    if ($?) {
+        Write-SetupLog -Level 'INFO' -Message 'UNINSTALL_COMPLETED'
+        exit 0
+    }
     exit 1
 }
 
 $restartChoice = (Read-Host $text.Restart).Trim().ToUpperInvariant()
 $generateRestart = $restartChoice -eq 'Y'
+$installRequest = if ($generateRestart) { 'INSTALL_REQUESTED restart_script=yes' } else { 'INSTALL_REQUESTED restart_script=no' }
+Write-SetupLog -Level 'INFO' -Message $installRequest
 Write-Host $text.Install
 & (Join-Path $PSScriptRoot 'Install-CodexScopedProxy.ps1') -GenerateRestartScript:$generateRestart
-if ($?) { exit 0 }
+if ($?) {
+    Write-SetupLog -Level 'INFO' -Message 'INSTALL_COMPLETED'
+    exit 0
+}
 exit 1

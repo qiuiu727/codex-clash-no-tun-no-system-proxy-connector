@@ -4,8 +4,29 @@ param()
 $ErrorActionPreference = 'Stop'
 $installRoot = Join-Path $env:LOCALAPPDATA 'CodexConnection'
 $expectedRoot = [System.IO.Path]::GetFullPath($installRoot).TrimEnd('\')
+$logDirectory = Join-Path $installRoot 'logs'
+$logPath = Join-Path $logDirectory 'uninstaller.log'
 $startMenuShortcut = Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs\Codex Connection.lnk'
 $taskbarDirectory = Join-Path $env:APPDATA 'Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar'
+
+function Write-UninstallerLog {
+    param(
+        [Parameter(Mandatory = $true)][string]$Level,
+        [Parameter(Mandatory = $true)][string]$Message
+    )
+
+    if (-not (Test-Path -LiteralPath $logDirectory -PathType Container)) {
+        New-Item -ItemType Directory -Path $logDirectory -Force | Out-Null
+    }
+    Add-Content -LiteralPath $logPath -Encoding UTF8 -Value ('{0} [UNINSTALLER] [{1}] {2}' -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'), $Level, $Message)
+}
+
+trap {
+    Write-UninstallerLog -Level 'ERROR' -Message $_.Exception.Message
+    throw
+}
+
+Write-UninstallerLog -Level 'INFO' -Message 'UNINSTALL_STARTED'
 
 if (Test-Path -LiteralPath $startMenuShortcut -PathType Leaf) {
     Remove-Item -LiteralPath $startMenuShortcut -Force

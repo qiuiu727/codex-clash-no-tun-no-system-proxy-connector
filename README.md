@@ -66,6 +66,7 @@ This project contains no Clash Verge Rev code, installer content, subscription, 
 - **No working local HTTP proxy was detected**: start the proxy core, confirm its HTTP listener is bound to loopback and supports HTTPS CONNECT, then run setup again.
 - **Codex account does not load**: test the proxy's HTTPS and WebSocket access to ChatGPT/OpenAI destinations. A successful proxy listener alone is not proof that the desktop app has a working route.
 - **Old taskbar icon behaves differently**: unpin the old icon and pin the generated `Codex Connection` Start Menu shortcut.
+- **Setup or launch failed**: inspect `%LOCALAPPDATA%\CodexConnection\logs\setup.log`, `installer.log`, or `launcher.log`. These local logs redact node URIs and token-like values and are never included in releases.
 
 ## License
 

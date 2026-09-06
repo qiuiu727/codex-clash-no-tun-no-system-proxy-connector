@@ -66,6 +66,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$env:LOCALAPPDATA\Codex
 - **未检测到可用的本地 HTTP 代理**：启动代理核心，确认其 HTTP 监听在回环地址并支持 HTTPS CONNECT，然后重新运行安装程序。
 - **Codex 账号未加载**：检查代理能否访问 ChatGPT/OpenAI 目标的 HTTPS 和 WebSocket。代理端口能连通并不代表桌面端请求一定已成功路由。
 - **旧任务栏图标行为不同**：取消固定旧图标，改为固定生成的 `Codex Connection` 开始菜单快捷方式。
+- **安装或启动失败**：查看 `%LOCALAPPDATA%\CodexConnection\logs\setup.log`、`installer.log` 或 `launcher.log`。这些日志仅在本机保存，会遮蔽节点链接和令牌类值，且绝不会被放入 Release。
 
 ## 许可证
 
