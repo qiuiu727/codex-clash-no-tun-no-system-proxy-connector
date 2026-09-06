@@ -1,17 +1,24 @@
 [CmdletBinding()]
 param(
-    [switch]$LaunchAfterInstall
+    [switch]$GenerateRestartScript
 )
 
 $ErrorActionPreference = 'Stop'
-$installRoot = Join-Path $env:LOCALAPPDATA 'CodexScopedProxyLauncher'
+$installRoot = Join-Path $env:LOCALAPPDATA 'CodexConnection'
 $sourceRoot = $PSScriptRoot
 $filesToInstall = @(
     'Start-CodexScopedProxy.ps1',
     'New-TaskbarShortcut.ps1',
-    'Remove-TaskbarShortcut.ps1',
-    'Uninstall-CodexScopedProxy.ps1'
+    'Uninstall-CodexScopedProxy.ps1',
+    'Start-CodexConnection.cmd'
 )
+
+if ($GenerateRestartScript) {
+    $filesToInstall += @(
+        'Restart-CodexConnection.ps1',
+        'Restart-CodexConnection.cmd'
+    )
+}
 
 foreach ($file in $filesToInstall) {
     if (-not (Test-Path -LiteralPath (Join-Path $sourceRoot $file) -PathType Leaf)) {
@@ -19,25 +26,43 @@ foreach ($file in $filesToInstall) {
     }
 }
 
-New-Item -ItemType Directory -Path $installRoot -Force | Out-Null
-foreach ($file in $filesToInstall) {
-    Copy-Item -LiteralPath (Join-Path $sourceRoot $file) -Destination (Join-Path $installRoot $file) -Force
-}
+$tempRoot = Join-Path $env:TEMP ('CodexConnection-' + [Guid]::NewGuid().ToString('N'))
+try {
+    New-Item -ItemType Directory -Path $tempRoot -Force | Out-Null
+    $tempConfigPath = Join-Path $tempRoot 'config.json'
+    & (Join-Path $sourceRoot 'Start-CodexScopedProxy.ps1') -DetectOnly -ConfigPath $tempConfigPath
+    if (-not $?) {
+        throw 'Installation stopped because no working local HTTP proxy was detected. Start your local proxy core first. No system proxy, TUN, or subscription was changed.'
+    }
 
-& (Join-Path $installRoot 'Start-CodexScopedProxy.ps1') -DetectOnly
-if ($LASTEXITCODE -ne 0) {
-    throw 'Installation stopped because no working local HTTP proxy was detected. No system proxy, TUN, or subscription was changed.'
-}
+    New-Item -ItemType Directory -Path $installRoot -Force | Out-Null
+    foreach ($file in $filesToInstall) {
+        Copy-Item -LiteralPath (Join-Path $sourceRoot $file) -Destination (Join-Path $installRoot $file) -Force
+    }
+    if (-not $GenerateRestartScript) {
+        foreach ($file in @('Restart-CodexConnection.ps1', 'Restart-CodexConnection.cmd')) {
+            $optionalFile = Join-Path $installRoot $file
+            if (Test-Path -LiteralPath $optionalFile -PathType Leaf) {
+                Remove-Item -LiteralPath $optionalFile -Force
+            }
+        }
+    }
+    Copy-Item -LiteralPath $tempConfigPath -Destination (Join-Path $installRoot 'config.json') -Force
 
-& (Join-Path $installRoot 'New-TaskbarShortcut.ps1')
-if ($LASTEXITCODE -ne 0) {
-    throw 'The launcher was installed, but the Start Menu shortcut could not be created.'
+    & (Join-Path $installRoot 'New-TaskbarShortcut.ps1')
+    if (-not $?) {
+        throw 'The launcher was installed, but the Start Menu shortcut could not be created.'
+    }
+}
+finally {
+    if (Test-Path -LiteralPath $tempRoot -PathType Container) {
+        Remove-Item -LiteralPath $tempRoot -Recurse -Force
+    }
 }
 
 Write-Output "Installed to $installRoot"
-Write-Output 'The local proxy endpoint was auto-detected and saved only in the ignored installation directory.'
-Write-Output 'Pin the generated Start Menu shortcut to the taskbar if desired.'
-
-if ($LaunchAfterInstall) {
-    Start-Process -FilePath (Join-Path $env:WINDIR 'System32\WindowsPowerShell\v1.0\powershell.exe') -ArgumentList @('-NoLogo', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-WindowStyle', 'Hidden', '-File', (Join-Path $installRoot 'Start-CodexScopedProxy.ps1')) -WindowStyle Hidden
+Write-Output 'The local proxy endpoint was auto-detected and saved only in the local installation directory.'
+Write-Output 'Use the Start Menu shortcut named Codex Connection, then choose Pin to taskbar.'
+if ($GenerateRestartScript) {
+    Write-Output 'The optional Restart Codex Connection script was created in the local installation directory.'
 }

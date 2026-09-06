@@ -4,93 +4,68 @@
   <strong>English</strong> · <a href="README.zh-CN.md">简体中文</a>
 </p>
 
-One-click install, start, or focus the Microsoft Store Codex desktop app through an already-running local HTTP proxy, without changing the Windows system proxy or TUN mode.
+An interactive Windows installer that starts the Microsoft Store Codex desktop app through an already-running local HTTP proxy, without enabling TUN or changing the Windows system proxy.
 
-This is a Windows PowerShell 5.1 project. It is a launcher, not a Clash configuration manager.
+The launcher is intentionally scoped: only a **new Codex process started through its generated launcher** receives the proxy environment and Electron proxy argument. The original Codex shortcut, system proxy, TUN mode, DNS, routes, and other applications are not modified.
 
-## Third-party notice
+## Install
 
-This project contains no Clash Verge Rev code, installer content, or proxy-core binary. If a future optional installer supports a local proxy core, it must obtain the official Mihomo release directly, verify the published checksum, and include Mihomo's copyright and MIT license notice with any redistributed binary. Do not extract or redistribute the `verge-mihomo` sidecar from Clash Verge Rev.
-
-"Clash" and "Mihomo" are third-party project names. This project is independent and is not affiliated with or endorsed by their maintainers.
-
-## What it does
-
-- If Codex is already running, restores its main window instead of restarting it.
-- If Codex is closed, starts the Store app with an Electron proxy argument plus proxy environment variables for the bundled backend.
-- Auto-detects a working local HTTP proxy owned by a supported local proxy core.
-- Saves the detected endpoint only in the local installation directory, never in the repository.
-- Creates an optional Start Menu shortcut that can be pinned to the taskbar.
-- Writes local runtime logs to `logs/`, which Git ignores.
-
-## What it deliberately does not do
-
-- Does not include, read, modify, upload, or publish a Clash subscription.
-- Never uploads or publishes a subscription URL. Any future local setup value is stored only in the user's local installation directory, is excluded by Git, and must never be added to an issue, commit, log, screenshot, or release asset.
-- Does not include a real proxy address or port.
-- Does not modify Clash TUN mode, Windows system proxy, routes, DNS, firewall rules, or existing network settings.
-- Does not store account credentials, tokens, cookies, Codex conversations, or user paths in the repository.
-
-## Requirements
-
-- Windows 11 or another Windows version with Windows PowerShell 5.1.
-- Microsoft Store Codex installed and signed in with a ChatGPT account.
-- A local Clash/Mihomo-compatible HTTP proxy already running. Its provider and configuration are your responsibility.
-- The proxy must support HTTPS CONNECT and WebSocket upgrades. Codex uses both HTTPS and WebSocket traffic.
-
-## One-click installation
-
-1. Start your own local proxy core first.
-2. Run:
+1. Start your own local proxy core (for example, Clash/Mihomo) first. It must expose a working loopback HTTP proxy with HTTPS CONNECT support.
+2. Double-click [Setup-CodexConnection.cmd](Setup-CodexConnection.cmd), or run it from PowerShell:
 
    ```powershell
-   powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Install-CodexScopedProxy.ps1
+   powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Setup-CodexConnection.ps1
    ```
 
-3. The installer detects the local HTTP proxy, installs launcher files under `%LOCALAPPDATA%`, and creates a Start Menu shortcut. No proxy URL is typed into the repository.
-4. Right-click `Codex Scoped Proxy` in the Start Menu and select **Pin to taskbar**.
+3. The setup program defaults to English. Type `ZH` at its first prompt for Simplified Chinese, then type `I` to install.
+4. During installation, choose whether to create the optional **Restart Codex Connection** script. The normal **Start Codex Connection** script is always installed.
+5. Setup auto-detects a live local HTTP proxy before installing. It creates a `Codex Connection` Start Menu shortcut. Right-click that shortcut and choose **Pin to taskbar**.
 
-To launch immediately after installation:
+The local installation is `%LOCALAPPDATA%\CodexConnection`.
 
-```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Install-CodexScopedProxy.ps1 -LaunchAfterInstall
-```
+## Launch behavior
+
+| How Codex is started | Result |
+| --- | --- |
+| `Codex Connection` launcher, Codex closed | Starts Codex with the detected local proxy for that child process only. |
+| `Codex Connection` launcher, Codex already open | Focuses the existing window; it does not restart or retroactively change that process. |
+| Original Codex icon | Starts Codex normally, with no proxy parameter injected by this project. |
+| Optional `Restart Codex Connection` script | Stops the Codex app and then launches it through the scoped launcher. Run it only when you explicitly want a restart. |
 
 ## Uninstall
 
-Run the installed uninstaller:
+Run [Setup-CodexConnection.cmd](Setup-CodexConnection.cmd) again and select `U`, or run the installed uninstaller:
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$env:LOCALAPPDATA\CodexScopedProxyLauncher\Uninstall-CodexScopedProxy.ps1"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$env:LOCALAPPDATA\CodexConnection\Uninstall-CodexScopedProxy.ps1"
 ```
 
-It removes only this launcher's files plus its Start Menu/taskbar shortcuts. It does not remove Codex, Clash, subscriptions, TUN, or system proxy settings.
+It removes only this project's local files and shortcuts. Codex, proxy applications, subscriptions, TUN, and the system proxy remain unchanged.
 
-## Behavior
+## Privacy and proxy configuration
 
-| Codex state | Launcher action |
-| --- | --- |
-| Not running | Auto-detects a working local HTTP proxy, then starts Codex with that proxy. |
-| Running | Restores and foregrounds the existing Codex window. |
-| Still starting | Does not start a second instance. |
-| Proxy unavailable | Does not launch Codex; see `logs/launcher.log`. |
+- The installer first detects an already-running local proxy automatically; no port needs to be typed.
+- This version does not ask for, import, modify, upload, or publish subscriptions or node links.
+- The detected local endpoint is stored only in the local installation directory. It is ignored by Git and must never be committed, included in a screenshot, issue, or release asset.
+- Local diagnostic output is also kept outside the repository and is only useful if setup or launching fails.
 
-## Privacy checklist before publishing a fork
+## Requirements
 
-Run these checks from the repository root:
+- Windows with Windows PowerShell 5.1.
+- Microsoft Store Codex installed.
+- An already-running local Clash/Mihomo-compatible HTTP proxy. The provider and its configuration are the user's responsibility.
 
-```powershell
-git status --ignored
-git ls-files
-```
+## Third-party notice
 
-`config.json` and `logs/` must remain untracked. Never paste a Clash subscription URL, access token, or provider configuration into an issue, commit, screenshot, or release asset.
+This project contains no Clash Verge Rev code, installer content, subscription, or proxy-core binary. If a future optional installer supports a local proxy core, it must obtain the official Mihomo release directly, verify the published checksum, and include Mihomo's copyright and MIT license notice with any redistributed binary. Do not extract or redistribute the `verge-mihomo` sidecar from Clash Verge Rev.
+
+"Clash" and "Mihomo" are third-party project names. This project is independent and is not affiliated with or endorsed by their maintainers.
 
 ## Troubleshooting
 
-- `No working local HTTP proxy was detected`: start the proxy core, then rerun the installer or launcher.
-- Account fails to load: verify that the proxy permits HTTPS and WebSocket upgrades for OpenAI/ChatGPT destinations.
-- The taskbar shows a duplicate icon: unpin the old shortcut, pin only the generated `Codex Scoped Proxy` shortcut, then launch it once.
+- **No working local HTTP proxy was detected**: start the proxy core, confirm its HTTP listener is bound to loopback and supports HTTPS CONNECT, then run setup again.
+- **Codex account does not load**: test the proxy's HTTPS and WebSocket access to ChatGPT/OpenAI destinations. A successful proxy listener alone is not proof that the desktop app has a working route.
+- **Old taskbar icon behaves differently**: unpin the old icon and pin the generated `Codex Connection` Start Menu shortcut.
 
 ## License
 

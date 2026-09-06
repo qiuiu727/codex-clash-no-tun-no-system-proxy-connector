@@ -2,7 +2,7 @@
 param()
 
 $ErrorActionPreference = 'Stop'
-$launcherPath = Join-Path $PSScriptRoot 'Start-CodexScopedProxy.ps1'
+$launcherPath = Join-Path $PSScriptRoot 'Start-CodexConnection.cmd'
 if (-not (Test-Path -LiteralPath $launcherPath -PathType Leaf)) {
     throw "Launcher was not found: $launcherPath"
 }
@@ -16,16 +16,15 @@ if (-not $package) {
 
 $appPath = Join-Path $package.InstallLocation 'app\ChatGPT.exe'
 $startMenuDirectory = Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs'
-$shortcutPath = Join-Path $startMenuDirectory 'Codex Scoped Proxy.lnk'
-$powerShellPath = Join-Path $env:WINDIR 'System32\WindowsPowerShell\v1.0\powershell.exe'
+$shortcutPath = Join-Path $startMenuDirectory 'Codex Connection.lnk'
 
 $shell = New-Object -ComObject WScript.Shell
 $shortcut = $shell.CreateShortcut($shortcutPath)
-$shortcut.TargetPath = $powerShellPath
-$shortcut.Arguments = '-NoLogo -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "' + $launcherPath + '"'
+$shortcut.TargetPath = $launcherPath
+$shortcut.Arguments = ''
 $shortcut.WorkingDirectory = $PSScriptRoot
 $shortcut.IconLocation = $appPath + ',0'
-$shortcut.Description = 'Start or focus Codex with a locally configured HTTP proxy'
+$shortcut.Description = 'Start or focus Codex through a local proxy without changing system proxy settings'
 $shortcut.Save()
 
 Write-Output "Created $shortcutPath"

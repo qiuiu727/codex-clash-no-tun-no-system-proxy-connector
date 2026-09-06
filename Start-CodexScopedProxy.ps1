@@ -1,11 +1,17 @@
 [CmdletBinding()]
 param(
     [string]$ConfigPath = (Join-Path $PSScriptRoot 'config.json'),
+    [string]$LogDirectory,
     [switch]$DetectOnly
 )
 
 $ErrorActionPreference = 'Stop'
-$logDirectory = Join-Path $PSScriptRoot 'logs'
+$logDirectory = if ([string]::IsNullOrWhiteSpace($LogDirectory)) {
+    Join-Path (Split-Path -Parent $ConfigPath) 'logs'
+}
+else {
+    $LogDirectory
+}
 $logPath = Join-Path $logDirectory 'launcher.log'
 
 function Write-LauncherLog {
