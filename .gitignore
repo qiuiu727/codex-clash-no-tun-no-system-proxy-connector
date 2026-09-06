@@ -19,6 +19,8 @@ logs/
 *.tmp
 *.zip
 *.msi
+!dist/
+!dist/*.zip
 
 # Editor and operating-system files.
 .vscode/
