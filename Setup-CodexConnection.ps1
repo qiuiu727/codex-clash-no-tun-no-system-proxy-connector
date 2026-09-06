@@ -53,8 +53,8 @@ if ($ValidateOnly) {
 
 $en = [pscustomobject]@{
     Language = 'Press Enter for English, or type ZH for Simplified Chinese'
-    Action = 'Type I to install or U to uninstall'
-    Restart = 'Create an optional Restart Codex Connection script? Type Y for yes'
+    Action = 'Type 1 to install or 2 to uninstall'
+    Restart = 'Create an optional Restart Codex Connection script? Type 1 for Yes or 2 for No (N)'
     Invalid = 'Invalid choice. Please try again.'
     Install = 'Installing Codex Connection...'
     Uninstall = 'Removing Codex Connection...'
@@ -62,8 +62,8 @@ $en = [pscustomobject]@{
 $zh = ConvertFrom-Json @'
 {
   "Language": "\u6309 Enter \u4f7f\u7528\u82f1\u8bed\uff0c\u6216\u8f93\u5165 ZH \u4f7f\u7528\u7b80\u4f53\u4e2d\u6587",
-  "Action": "\u8f93\u5165 I \u5b89\u88c5\uff0c\u6216\u8f93\u5165 U \u5378\u8f7d",
-  "Restart": "\u662f\u5426\u751f\u6210\u53ef\u9009\u7684\u201c\u91cd\u542f Codex Connection\u201d\u811a\u672c\uff1f\u8f93\u5165 Y \u786e\u8ba4",
+  "Action": "\u8f93\u5165 1 \u5b89\u88c5\uff0c\u8f93\u5165 2 \u5378\u8f7d",
+  "Restart": "\u662f\u5426\u751f\u6210\u53ef\u9009\u7684\u201c\u91cd\u542f Codex Connection\u201d\u811a\u672c\uff1f\u8f93\u5165 1 \u751f\u6210\uff0c\u8f93\u5165 2 \u4e0d\u751f\u6210\uff08N\uff09",
   "Invalid": "\u8f93\u5165\u65e0\u6548\uff0c\u8bf7\u91cd\u8bd5\u3002",
   "Install": "\u6b63\u5728\u5b89\u88c5 Codex Connection...",
   "Uninstall": "\u6b63\u5728\u5378\u8f7d Codex Connection..."
@@ -76,11 +76,11 @@ Write-SetupLog -Level 'INFO' -Message 'SETUP_STARTED'
 
 while ($true) {
     $action = (Read-Host $text.Action).Trim().ToUpperInvariant()
-    if ($action -in @('I', 'U')) { break }
+    if ($action -in @('1', '2')) { break }
     Write-Host $text.Invalid
 }
 
-if ($action -eq 'U') {
+if ($action -eq '2') {
     Write-SetupLog -Level 'INFO' -Message 'UNINSTALL_REQUESTED'
     Write-Host $text.Uninstall
     $uninstaller = Join-Path $PSScriptRoot 'Uninstall-CodexScopedProxy.ps1'
@@ -99,7 +99,11 @@ if ($action -eq 'U') {
 }
 
 $restartChoice = (Read-Host $text.Restart).Trim().ToUpperInvariant()
-$generateRestart = $restartChoice -eq 'Y'
+while ($restartChoice -notin @('1', '2')) {
+    Write-Host $text.Invalid
+    $restartChoice = (Read-Host $text.Restart).Trim().ToUpperInvariant()
+}
+$generateRestart = $restartChoice -eq '1'
 $installRequest = if ($generateRestart) { 'INSTALL_REQUESTED restart_script=yes' } else { 'INSTALL_REQUESTED restart_script=no' }
 Write-SetupLog -Level 'INFO' -Message $installRequest
 Write-Host $text.Install

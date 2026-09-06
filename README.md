@@ -17,8 +17,8 @@ The launcher is intentionally scoped: only a **new Codex process started through
    powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Setup-CodexConnection.ps1
    ```
 
-3. The setup program defaults to English. Type `ZH` at its first prompt for Simplified Chinese, then type `I` to install.
-4. During installation, choose whether to create the optional **Restart Codex Connection** script. The normal **Start Codex Connection** script is always installed.
+3. The setup program defaults to English. Type `ZH` at its first prompt for Simplified Chinese, then type `1` to install or `2` to uninstall.
+4. During installation, type `1` to create the optional **Restart Codex Connection** script, or `2` for No. The normal **Start Codex Connection** script is always installed.
 5. Setup auto-detects a live local HTTP proxy before installing. It creates a `Codex Connection` Start Menu shortcut. Right-click that shortcut and choose **Pin to taskbar**.
 
 The local installation is `%LOCALAPPDATA%\CodexConnection`.
