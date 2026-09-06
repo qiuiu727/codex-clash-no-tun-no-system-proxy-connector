@@ -108,8 +108,8 @@ function Find-LocalHttpProxy {
             if ($process.ProcessName -notmatch $knownCoreProcessPattern) {
                 continue
             }
-            $host = if ($address -eq '::1') { '[::1]' } else { $address }
-            $candidates += [Uri]("http://$host`:$($connection.LocalPort)")
+            $proxyHost = if ($address -eq '::1') { '[::1]' } else { $address }
+            $candidates += [Uri]("http://$proxyHost`:$($connection.LocalPort)")
         }
         catch {}
     }
