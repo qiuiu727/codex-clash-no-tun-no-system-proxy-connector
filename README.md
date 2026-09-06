@@ -21,6 +21,8 @@ The launcher is intentionally scoped: only a **new Codex process started through
 4. During installation, type `1` to create the optional **Restart Codex Connection** script, or `2` for No. The normal **Start Codex Connection** script is always installed.
 5. Setup auto-detects a live local HTTP proxy before installing. It reports a clear success or failure result before closing, creates a movable `Start Codex.exe` launcher with an original code-and-connection icon on the Desktop, and creates `Restart Codex.exe` there when you chose the optional restart script. It also creates a matching Start Menu shortcut; right-click it and choose **Pin to taskbar**.
 
+Running setup again is a safe update: a prior Codex Connection launcher is recognized and replaced, while an unrelated file with the same name is never overwritten. Selecting No for the optional restart launcher removes only an existing restart launcher made by this project.
+
 The local installation is `%LOCALAPPDATA%\CodexConnection`.
 
 ## Launch behavior

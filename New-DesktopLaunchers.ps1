@@ -31,13 +31,44 @@ function Copy-PortableDesktopLauncher {
     if (Test-Path -LiteralPath $desktopFile -PathType Leaf) {
         $existingHash = (Get-FileHash -LiteralPath $desktopFile -Algorithm SHA256).Hash
         $launcherHash = (Get-FileHash -LiteralPath $LauncherPath -Algorithm SHA256).Hash
-        if ($existingHash -ne $launcherHash) {
+        if ($existingHash -ne $launcherHash -and -not (Test-IsCodexConnectionLauncher -Path $desktopFile)) {
             throw "Refusing to overwrite an unrelated Desktop file: $desktopFile"
         }
     }
 
     Copy-Item -LiteralPath $LauncherPath -Destination $desktopFile -Force
     Write-Output "Created portable Desktop EXE: $desktopFile"
+}
+
+function Test-IsCodexConnectionLauncher {
+    param([Parameter(Mandatory = $true)][string]$Path)
+
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
+        return $false
+    }
+    try {
+        $bytes = [System.IO.File]::ReadAllBytes($Path)
+        $text = [System.Text.Encoding]::Unicode.GetString($bytes)
+        return $text.Contains('Codex Connection could not complete') -and $text.Contains('Start-CodexScopedProxy.ps1')
+    }
+    catch {
+        return $false
+    }
+}
+
+function Remove-GeneratedDesktopLauncher {
+    param([Parameter(Mandatory = $true)][string]$FileName)
+
+    $desktopFile = Join-Path $desktopDirectory $FileName
+    if (-not (Test-Path -LiteralPath $desktopFile -PathType Leaf)) {
+        return
+    }
+    if (-not (Test-IsCodexConnectionLauncher -Path $desktopFile)) {
+        Write-Warning "Keeping an unrelated Desktop file: $desktopFile"
+        return
+    }
+    Remove-Item -LiteralPath $desktopFile -Force
+    Write-Output "Removed obsolete generated Desktop EXE: $desktopFile"
 }
 
 New-Item -ItemType Directory -Path $desktopDirectory -Force | Out-Null
@@ -50,4 +81,11 @@ Copy-PortableDesktopLauncher -FileName $startName -LauncherPath $launcherPath
 
 if ($GenerateRestartScript) {
     Copy-PortableDesktopLauncher -FileName $restartName -LauncherPath $launcherPath
+}
+else {
+    $otherRestartName = if ($Language -eq 'zh') { 'Restart Codex.exe' } else { $zhRestartName }
+    Remove-GeneratedDesktopLauncher -FileName $restartName
+    if ($otherRestartName -ne $restartName) {
+        Remove-GeneratedDesktopLauncher -FileName $otherRestartName
+    }
 }
