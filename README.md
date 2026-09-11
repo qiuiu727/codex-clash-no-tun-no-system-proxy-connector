@@ -34,6 +34,17 @@ The local installation is `%LOCALAPPDATA%\CodexConnection`.
 | Original Codex icon | Starts Codex normally, with no proxy parameter injected by this project. |
 | Optional `Restart Codex Connection` script | Stops the Codex app and then launches it through the scoped launcher. Run it only when you explicitly want a restart. |
 
+## Optional component bridge
+
+The repository also includes [Codex Scoped Proxy Component Bridge](component-bridge/README.md). It can start Codex itself through the detected process-scoped proxy and launch explicitly approved companion tools through the same route.
+
+- If Codex is closed, the bridge starts a new proxied Codex process.
+- If Codex is already running, it brings that existing window forward; proxy settings cannot be added retroactively.
+- Every companion executable requires a Windows **Yes/No** approval tied to its exact path and SHA-256 hash.
+- The bridge passes proxy environment variables only. It never copies Codex cookies, login tokens, account data, or sessions.
+
+The connector and component bridge are packaged as separate downloads in the same GitHub Release, so users can install only the part they need.
+
 ## Uninstall
 
 Run [Setup-CodexConnection.cmd](Setup-CodexConnection.cmd) again and select `2`, or run the installed uninstaller:
